@@ -1,64 +1,80 @@
 {
-  "baseUrl": "https://A_COMPLETER.projetlocatif.fr",
+  "baseUrl": "https://app.projetlocatif.fr",
   "loginPath": "/login",
   "selectors": {
-    "email": "input[type=email], input[name=email], input[name=username], #email",
+    "email": "input[type=email], input[name=email], #email",
     "password": "input[type=password]",
-    "submit": "button[type=submit], input[type=submit]",
-    "loggedInMarker": "a[href*=logout], a[href*=deconnexion], [data-testid=user-menu]"
+    "submit": "button[type=submit]",
+    "loggedInMarker": "button[aria-label*=logout], [href*=logout], .v-navigation-drawer"
   },
   "auth": {
     "bearerFromLocalStorage": null
   },
   "resources": {
     "biens": {
-      "mode": "api",
-      "apiPath": "/api/A_COMPLETER/biens?page=1&perPage=200",
+      "_commentaire": "Biens = properties. Liste via POST /api/properties/search (filtres), détail via GET /api/properties/{id}. fieldMap à confirmer avec `npm run discover` sur une fiche.",
+      "mode": "search",
+      "searchPath": "/api/properties/search",
       "itemsPath": "data",
-      "pagePath": "/biens",
-      "detailApiPath": "/api/A_COMPLETER/biens/{id}",
-      "detailPagePath": "/biens/{id}",
+      "defaultFilters": { "orderBy": "id", "orderDesc": true },
+      "detailApiPath": "/api/properties/{id}",
+      "detailPagePath": "/properties/{id}",
       "fieldMap": {
         "id": "id",
-        "titre": "title",
-        "ville": "city",
-        "codePostal": "zipCode",
         "type": "type",
+        "ville": "ville",
+        "codePostal": "code_postal",
+        "departement": "departement",
         "surface": "surface",
-        "prix": "price",
-        "travaux": "worksAmount",
-        "loyer": "rent",
-        "rendement": "grossYield",
+        "prix": "prix",
+        "rendement": "rentabilite_brute",
+        "rendementNet": "rentabilite_nette",
         "statut": "status",
-        "dateMaj": "updatedAt"
-      },
-      "dom": {
-        "row": "table tbody tr",
-        "header": "table thead th",
-        "detailLink": "a[href]"
+        "dateMaj": "updated_at"
       }
     },
-    "dossiers": {
-      "mode": "api",
-      "apiPath": "/api/A_COMPLETER/dossiers?page=1&perPage=200",
+    "prospects": {
+      "_commentaire": "Tes prospects / investisseurs. Liste via POST /api/prospects/search, détail via GET /api/prospects/{id}.",
+      "mode": "search",
+      "searchPath": "/api/prospects/search",
       "itemsPath": "data",
-      "pagePath": "/dossiers",
-      "detailApiPath": "/api/A_COMPLETER/dossiers/{id}",
-      "detailPagePath": "/dossiers/{id}",
+      "defaultFilters": { "orderBy": "id", "orderDesc": true },
+      "detailApiPath": "/api/prospects/{id}",
+      "detailPagePath": "/prospects/{id}",
       "fieldMap": {
         "id": "id",
-        "client": "client.fullName",
-        "bien": "property.title",
-        "ville": "property.city",
-        "etape": "step",
-        "budget": "budget",
-        "commission": "commission",
-        "dateMaj": "updatedAt"
-      },
-      "dom": {
-        "row": "table tbody tr",
-        "header": "table thead th",
-        "detailLink": "a[href]"
+        "nom": "nom_complet",
+        "statut": "status",
+        "ville": "ville_code_postal",
+        "dateCreation": "created_at"
+      }
+    },
+    "ventes": {
+      "_commentaire": "Ventes / honoraires. Liste via POST /api/sales/search.",
+      "mode": "search",
+      "searchPath": "/api/sales/search",
+      "itemsPath": "data",
+      "defaultFilters": { "orderBy": "id", "orderDesc": true },
+      "detailApiPath": "/api/sales/{id}",
+      "detailPagePath": "/sales/{id}",
+      "fieldMap": {
+        "id": "id",
+        "statut": "status",
+        "ville": "ville_code_postal"
+      }
+    },
+    "mandats": {
+      "_commentaire": "Mandats. Liste via POST /api/mandats/search.",
+      "mode": "search",
+      "searchPath": "/api/mandats/search",
+      "itemsPath": "data",
+      "defaultFilters": {},
+      "detailApiPath": "/api/mandats/{id}",
+      "detailPagePath": "/mandats/{id}",
+      "fieldMap": {
+        "id": "id",
+        "type": "type",
+        "statut": "mandat_status"
       }
     }
   }

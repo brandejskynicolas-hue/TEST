@@ -15,8 +15,9 @@ et Claude va chercher directement sur la plateforme, puis peut pousser le résul
 | `pl_statut` | Vérifie la connexion |
 | `pl_rechercher_biens` | Biens filtrés : ville / CP, prix, rendement, surface, statut, tri |
 | `pl_detail_bien` | Fiche complète d'un bien |
-| `pl_lister_dossiers` | Tes dossiers clients (étape, budget, commission…) |
-| `pl_detail_dossier` | Détail d'un dossier |
+| `pl_lister_prospects` | Tes prospects / investisseurs (statut, ville, date) |
+| `pl_detail_prospect` | Fiche complète d'un prospect |
+| `pl_lister` | Liste générique d'une ressource (`ventes`, `mandats`…) |
 | `pl_exporter` | CSV + tableau prêt pour Google Sheets |
 | `pl_lire_page` | Lit n'importe quelle page de l'espace (actus, docs…) |
 | `pl_appel_api` | GET brut sur un endpoint JSON interne |
@@ -44,22 +45,35 @@ npm run login
 Un navigateur s'ouvre : connecte-toi (2FA/captcha OK), puis ferme-le. La session est gardée dans
 `~/.projetlocatif-mcp/`.
 
-### 2. Découverte de l'API interne (l'astuce)
+### 2. API interne — déjà cartographiée
 
-La plupart des plateformes récentes chargent leurs données via une API JSON cachée. On s'en sert
-directement : plus rapide et plus fiable que lire le HTML.
+`app.projetlocatif.fr` est une application **Laravel** dont la page publie sa table de routes. Les
+endpoints sont donc déjà connus (voir `docs/api-routes-projetlocatif.txt`) et `config.example.json` est
+pré-rempli :
+
+| Ressource | Liste | Détail |
+|---|---|---|
+| `biens` (properties) | `POST /api/properties/search` | `GET /api/properties/{id}` |
+| `prospects` | `POST /api/prospects/search` | `GET /api/prospects/{id}` |
+| `ventes` (sales) | `POST /api/sales/search` | `GET /api/sales/{id}` |
+| `mandats` | `POST /api/mandats/search` | `GET /api/mandats/{id}` |
+
+Les listes sont des recherches Laravel paginées : le connecteur envoie un `POST …/search` avec les
+filtres et parcourt les pages automatiquement (`"mode": "search"`).
+
+**À confirmer** : les noms exacts des champs renvoyés (le `fieldMap` est une hypothèse). Pour les vérifier
+sans rien exposer de sensible :
 
 ```bash
 npm run discover
 ```
 
-Navigue normalement : liste des biens, quelques fiches, liste des dossiers, un ou deux dossiers. Ferme
-ensuite le navigateur. Le script produit `~/.projetlocatif-mcp/discovery/endpoints-schema.json`, qui
-contient **uniquement les URL et les noms de champs, aucune valeur**. Envoie-moi ce fichier et je remplis
-`apiPath`, `itemsPath` et `fieldMap` dans `config.json`.
+Ouvre la liste des biens, 2-3 fiches, la liste des prospects. Ferme le navigateur. Le script écrit
+`~/.projetlocatif-mcp/discovery/endpoints-schema.json` — **uniquement les URL et les noms de champs,
+aucune valeur**. Envoie-le moi, j'ajuste les `fieldMap`.
 
-Si le site n'a pas d'API JSON (pages HTML classiques), passe la ressource en `"mode": "dom"` avec
-`pagePath` : le connecteur lit alors le tableau de la page.
+Si un jour une ressource n'a pas d'API JSON, passe-la en `"mode": "dom"` avec `pagePath` : le connecteur
+lit alors le tableau HTML de la page.
 
 ### 3. Brancher sur Claude Desktop
 
@@ -92,7 +106,8 @@ claude mcp add projetlocatif -- node /CHEMIN/VERS/projetlocatif-mcp/src/index.js
 ## Exemples de demandes
 
 - « Liste les biens dispo à Lille / Roubaix avec plus de 8 % brut, triés par rendement »
-- « Quels dossiers sont bloqués en financement ? Prépare-moi les relances »
+- « Mes prospects en attente de contact, triés par date »
+- « Quels prospects sont en attente de contact ? Prépare-moi les relances »
 - « Exporte tous les biens dispo dans mon Google Sheet *Pipe biens* » (combine `pl_exporter` et le connecteur Google Sheets)
 - « Pour mon client X (budget 150 k€, cash-flow positif), propose les 3 meilleurs biens »
 

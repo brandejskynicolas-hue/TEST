@@ -20,10 +20,6 @@ before(async () => {
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), "plmcp-"));
   const cfg = JSON.parse(fs.readFileSync(new URL("../config.example.json", import.meta.url)));
   cfg.baseUrl = base;
-  cfg.resources.biens.apiPath = "/api/biens";
-  cfg.resources.biens.detailApiPath = "/api/biens/{id}";
-  cfg.resources.dossiers.mode = "dom";
-  cfg.resources.dossiers.pagePath = "/dossiers-table";
   fs.writeFileSync(path.join(tmp, "config.json"), JSON.stringify(cfg));
   client = new Client({ name: "test", version: "0" });
   await client.connect(new StdioClientTransport({
@@ -37,24 +33,32 @@ after(async () => { await client?.close(); srv?.close(); });
 
 test("expose les outils", async () => {
   const { tools } = await client.listTools();
-  assert.deepEqual(tools.map((t) => t.name).sort(), ["pl_appel_api", "pl_detail_bien", "pl_detail_dossier", "pl_exporter", "pl_lire_page", "pl_lister_dossiers", "pl_rechercher_biens", "pl_statut"]);
+  const names = tools.map((t) => t.name).sort();
+  for (const n of ["pl_statut", "pl_rechercher_biens", "pl_detail_bien", "pl_lister_prospects", "pl_detail_prospect", "pl_lister", "pl_exporter", "pl_lire_page", "pl_appel_api"])
+    assert.ok(names.includes(n), `manque ${n}`);
 });
 test("connexion automatique", async () => {
   assert.equal((await call("pl_statut")).connecte, true);
 });
-test("recherche biens filtrée et triée", async () => {
+test("biens paginés, filtrés et triés", async () => {
   const r = await call("pl_rechercher_biens", { ville: "59", rendement_min: 7, tri: "rendement:desc" });
-  assert.equal(r.total_plateforme, 3);
+  assert.equal(r.total_plateforme, 3); // 3 biens sur 2 pages -> pagination OK
   assert.deepEqual(r.biens.map((b) => b.ville), ["Roubaix", "Lille"]);
 });
-test("détail bien avec données brutes", async () => {
+test("détail bien avec brut", async () => {
   const r = await call("pl_detail_bien", { id: "2" });
   assert.equal(r.prix, 320000);
   assert.equal(r._brut.dpe, "C");
 });
-test("dossiers en mode tableau HTML", async () => {
-  const r = await call("pl_lister_dossiers", { query: "jean" });
-  assert.equal(r.dossiers[0]["Étape"], "compromis");
+test("prospects", async () => {
+  const r = await call("pl_lister_prospects", { statut: "en_cours" });
+  assert.equal(r.total, 2);
+  assert.equal(r.prospects[0].nom, "Jean Test");
+});
+test("détail prospect brut", async () => {
+  const r = await call("pl_detail_prospect", { id: "11" });
+  assert.equal(r.nom, "Marie Invest");
+  assert.equal(r._brut.telephone, "0600000000");
 });
 test("export CSV + valeurs Sheets", async () => {
   const r = await call("pl_exporter", { ressource: "biens", statut: "disponible" });

@@ -85,14 +85,16 @@ server.registerTool(
 );
 
 server.registerTool(
-  "pl_lister_dossiers",
+  "pl_lister_prospects",
   {
-    title: "Lister mes dossiers clients",
+    title: "Lister mes prospects / investisseurs",
     description:
-      "Liste tes dossiers investisseurs (client, bien, étape, budget, commission). Filtre par texte ou étape.",
+      "Liste tes prospects investisseurs (nom, statut, ville). Filtre par texte, statut " +
+      "('en_attente', 'a_contacter', 'en_cours', 'en_accompagnement', 'en_proposition'…) ou ville.",
     inputSchema: {
-      query: z.string().optional().describe("Nom du client, ville, bien…"),
-      statut: z.string().optional().describe("Étape : 'compromis', 'financement', 'travaux'…"),
+      query: z.string().optional().describe("Nom, ville…"),
+      statut: z.string().optional().describe("Statut du parcours"),
+      ville: z.string().optional(),
       tri: z.string().optional(),
       limit: z.number().int().min(1).max(500).optional(),
       refresh: z.boolean().optional(),
@@ -100,32 +102,56 @@ server.registerTool(
     annotations: READ_ONLY,
   },
   safe(async ({ refresh, ...f }) => {
-    const all = await repo.list("dossiers", { refresh });
+    const all = await repo.list("prospects", { refresh });
     const res = applyFilters(all, f);
-    return ok({ total: all.length, resultats: res.length, dossiers: res });
+    return ok({ total: all.length, resultats: res.length, prospects: res });
   })
 );
 
 server.registerTool(
-  "pl_detail_dossier",
+  "pl_detail_prospect",
   {
-    title: "Détail d'un dossier",
-    description: "Renvoie le détail complet d'un dossier client.",
+    title: "Détail d'un prospect",
+    description: "Renvoie la fiche complète d'un prospect / investisseur (toutes les données brutes).",
     inputSchema: { id: z.string() },
     annotations: READ_ONLY,
   },
-  safe(async ({ id }) => ok(await repo.get("dossiers", id)))
+  safe(async ({ id }) => ok(await repo.get("prospects", id)))
+);
+
+server.registerTool(
+  "pl_lister",
+  {
+    title: "Lister une ressource (ventes, mandats…)",
+    description:
+      "Liste générique d'une ressource configurée (ex: 'ventes', 'mandats') avec filtres texte/statut/ville.",
+    inputSchema: {
+      ressource: z.string().describe("Nom de la ressource dans config.json (ex 'ventes', 'mandats')"),
+      query: z.string().optional(),
+      statut: z.string().optional(),
+      ville: z.string().optional(),
+      tri: z.string().optional(),
+      limit: z.number().int().min(1).max(500).optional(),
+      refresh: z.boolean().optional(),
+    },
+    annotations: READ_ONLY,
+  },
+  safe(async ({ ressource, refresh, ...f }) => {
+    const all = await repo.list(ressource, { refresh });
+    const res = applyFilters(all, f);
+    return ok({ ressource, total: all.length, resultats: res.length, elements: res });
+  })
 );
 
 server.registerTool(
   "pl_exporter",
   {
-    title: "Exporter biens ou dossiers",
+    title: "Exporter une ressource",
     description:
-      "Exporte biens ou dossiers filtrés : écrit un CSV (séparateur ;) dans ~/.projetlocatif-mcp/exports et " +
+      "Exporte une ressource filtrée : écrit un CSV (séparateur ;) dans ~/.projetlocatif-mcp/exports et " +
       "renvoie les lignes en tableau (en-têtes + valeurs) prêtes à être collées dans Google Sheets.",
     inputSchema: {
-      ressource: z.enum(["biens", "dossiers"]),
+      ressource: z.string().describe("'biens', 'prospects', 'ventes', 'mandats'…"),
       ...filtresBiens,
     },
     annotations: { ...READ_ONLY, readOnlyHint: false, destructiveHint: false },

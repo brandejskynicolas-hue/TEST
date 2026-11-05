@@ -101,26 +101,57 @@ export class Session {
     return { Authorization: `Bearer ${token}` };
   }
 
-  /** GET JSON sur un endpoint interne avec les cookies de session. */
-  apiGet(path) {
+  /** Jeton CSRF lu depuis la balise meta de la page (apps Laravel). */
+  async csrfToken() {
+    try {
+      return await this.page.evaluate(
+        () => document.querySelector('meta[name=csrf-token]')?.content || null
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  /** Requête JSON (GET ou POST) sur un endpoint interne, avec cookies de session. */
+  apiRequest(method, path, body) {
     return this.run(async () => {
       await this.ensureLoggedIn();
-      const doGet = async () =>
-        this.context.request.get(absUrl(this.cfg, path), {
-          headers: { Accept: "application/json", ...(await this.authHeaders()) },
-        });
-      let res = await doGet();
-      if (res.status() === 401 || res.status() === 403) {
+      const call = async () => {
+        const headers = { Accept: "application/json", ...(await this.authHeaders()) };
+        const opts = { headers };
+        if (method === "POST") {
+          const csrf = await this.csrfToken();
+          if (csrf) headers["X-CSRF-TOKEN"] = csrf;
+          headers["X-Requested-With"] = "XMLHttpRequest";
+          opts.data = body ?? {};
+        }
+        const url = absUrl(this.cfg, path);
+        return method === "POST"
+          ? this.context.request.post(url, opts)
+          : this.context.request.get(url, opts);
+      };
+      let res = await call();
+      if (res.status() === 401 || res.status() === 403 || res.status() === 419) {
         await this.ensureLoggedIn({ force: true });
-        res = await doGet();
+        res = await call();
       }
-      if (!res.ok()) throw new Error(`HTTP ${res.status()} sur ${path}`);
+      if (!res.ok()) throw new Error(`HTTP ${res.status()} sur ${method} ${path}`);
       const type = res.headers()["content-type"] || "";
       if (!type.includes("json")) {
-        throw new Error(`${path} ne renvoie pas du JSON (${type}). Vérifie apiPath ou passe mode:"dom".`);
+        throw new Error(`${path} ne renvoie pas du JSON (${type}). Vérifie le chemin ou passe mode:"dom".`);
       }
       return res.json();
     });
+  }
+
+  /** GET JSON sur un endpoint interne avec les cookies de session. */
+  apiGet(path) {
+    return this.apiRequest("GET", path);
+  }
+
+  /** POST JSON (listes/recherches filtrées de type Laravel). */
+  apiPost(path, body) {
+    return this.apiRequest("POST", path, body);
   }
 
   /** Lit un tableau HTML : renvoie une liste d'objets {entête: valeur, _lien}. */
