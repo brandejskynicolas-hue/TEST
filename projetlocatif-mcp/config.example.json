@@ -1,0 +1,65 @@
+{
+  "baseUrl": "https://A_COMPLETER.projetlocatif.fr",
+  "loginPath": "/login",
+  "selectors": {
+    "email": "input[type=email], input[name=email], input[name=username], #email",
+    "password": "input[type=password]",
+    "submit": "button[type=submit], input[type=submit]",
+    "loggedInMarker": "a[href*=logout], a[href*=deconnexion], [data-testid=user-menu]"
+  },
+  "auth": {
+    "bearerFromLocalStorage": null
+  },
+  "resources": {
+    "biens": {
+      "mode": "api",
+      "apiPath": "/api/A_COMPLETER/biens?page=1&perPage=200",
+      "itemsPath": "data",
+      "pagePath": "/biens",
+      "detailApiPath": "/api/A_COMPLETER/biens/{id}",
+      "detailPagePath": "/biens/{id}",
+      "fieldMap": {
+        "id": "id",
+        "titre": "title",
+        "ville": "city",
+        "codePostal": "zipCode",
+        "type": "type",
+        "surface": "surface",
+        "prix": "price",
+        "travaux": "worksAmount",
+        "loyer": "rent",
+        "rendement": "grossYield",
+        "statut": "status",
+        "dateMaj": "updatedAt"
+      },
+      "dom": {
+        "row": "table tbody tr",
+        "header": "table thead th",
+        "detailLink": "a[href]"
+      }
+    },
+    "dossiers": {
+      "mode": "api",
+      "apiPath": "/api/A_COMPLETER/dossiers?page=1&perPage=200",
+      "itemsPath": "data",
+      "pagePath": "/dossiers",
+      "detailApiPath": "/api/A_COMPLETER/dossiers/{id}",
+      "detailPagePath": "/dossiers/{id}",
+      "fieldMap": {
+        "id": "id",
+        "client": "client.fullName",
+        "bien": "property.title",
+        "ville": "property.city",
+        "etape": "step",
+        "budget": "budget",
+        "commission": "commission",
+        "dateMaj": "updatedAt"
+      },
+      "dom": {
+        "row": "table tbody tr",
+        "header": "table thead th",
+        "detailLink": "a[href]"
+      }
+    }
+  }
+}
