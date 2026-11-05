@@ -2,3 +2,8 @@ node_modules/
 config.json
 .env
 *.csv
+
+# secrets ProjetLocatif (ne jamais committer)
+cookie.txt
+jar.txt
+.projetlocatif-mcp/
