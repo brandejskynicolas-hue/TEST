@@ -41,6 +41,29 @@ cookie `XSRF-TOKEN`. Sans ça → `Unauthenticated`.
     `honoraires` = {prix_vente, honoraire_pl_ttc, honoraire_pl, charge, distribution, ...}
 - Carte complète des 348 routes : `projetlocatif-mcp/docs/api-routes-projetlocatif.txt`
 
+## Demande de mandat (procédure validée le 09/11/2026)
+Une « demande de mandat » = statut `unsigned` (« En cours de signature ») ; le siège (Marine) la
+reprend ensuite dans Protexa et l'envoie en signature. Trois appels par lot :
+1. **Fiche bien** : `POST /api/properties` (`visibility:"all"`, `precisions:"<adresse> - Lot N"`,
+   `financier:{prix_vente:<net vendeur>, honoraires_pl_montant, honoraires_pl:"acquereur"}`,
+   `sellers:[<id vendeur>]`, `logements:[{pieces, surface, niveau, loyer_prev, charges}]`).
+2. **Mandat** : `POST /api/mandats` `{type:"simple", seller_id, property_id, advisor_id:null,
+   property:{...fiche relue..., lots:"N", charge:"acquereur", prix_net, honorairesa, copropriete:true}}`
+   (si charge vendeur : `prix_vente` + `honoraires`).
+3. **Justificatif de propriété** (obligatoire côté appli pour un vendeur pro) :
+   `scripts/pl-upload.sh /api/mandats/documents <pdf> mandat_id=<id> type=justificatif_propriete "name=Justificatif de propriété"`.
+   Pièce attendue = acte d'acquisition, compromis ou attestation notariée de l'immeuble
+   (dataroom Fief sur le Drive partagé « Datarooms »).
+- Vendeurs : `GET /api/mandats/options?value=sellers&text=merckel` (fiche « SAS FIEF » utilisée : 3184).
+  Vérifier l'entité propriétaire sur le justificatif (FIEF, DM PATRIMOINE, FIEF ASSET MANAGEMENT, EMJ1…).
+- Lookup d'un bien pour un mandat : `GET /api/mandats/options?value=properties&include[]=<id>`.
+- Le rôle conseiller **ne peut ni supprimer ni clôturer** un mandat (403) : vérifier AVANT de créer.
+- Barème : honoraires ≤ 8 % du net vendeur → net = FAI / 1,08 **arrondi à la centaine supérieure**.
+
+## Piège script
+`pl-live.sh` : ne jamais écrire `"${BODY:-{}}"` (bash ajoute un `}` → JSON invalide, ignoré
+silencieusement par Laravel : filtres/tri ignorés). Corrigé ; corps volumineux : passer `@fichier.json`.
+
 ## Règles de prudence (plateforme RÉSEAU partagée : Fief, Florian, siège)
 - Mode convenu avec Nicolas : **écriture autonome sur les ventes** ; pour le reste, lecture.
 - Toute création de bien de test → en **brouillon `visibility:"me"`** puis supprimé.

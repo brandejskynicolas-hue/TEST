@@ -22,6 +22,9 @@ JAR="$DATA_DIR/jar.txt"
 [ -s "$COOKIE_FILE" ] || { echo "Cookie absent : écris 'projetlocatif_session=...' dans $COOKIE_FILE" >&2; exit 1; }
 SESSION="$(cat "$COOKIE_FILE")"
 METHOD="${1:?methode GET|POST|PUT|DELETE}"; APIP="${2:?chemin /api/...}"; BODY="${3:-}"
+# NB : ne pas écrire "${BODY:-{}}" : bash y colle un "}" final -> JSON invalide, ignoré par Laravel.
+[ -n "$BODY" ] || BODY='{}'
+# Corps volumineux : passer "@fichier.json" en 3e argument (lu par curl).
 
 # (ré)amorce laravel_token + XSRF-TOKEN si le jar est vide ou vieux de +10 min
 if [ ! -s "$JAR" ] || [ -n "$(find "$JAR" -mmin +10 2>/dev/null || true)" ]; then
@@ -39,6 +42,6 @@ COMMON=(-sS -m 30
 case "$METHOD" in
   GET)            curl "${COMMON[@]}" "$BASE$APIP" ;;
   DELETE)         curl "${COMMON[@]}" -X DELETE "$BASE$APIP" ;;
-  POST|PUT|PATCH) curl "${COMMON[@]}" -X "$METHOD" "$BASE$APIP" -H "Content-Type: application/json" --data "${BODY:-{}}" ;;
+  POST|PUT|PATCH) curl "${COMMON[@]}" -X "$METHOD" "$BASE$APIP" -H "Content-Type: application/json" --data-binary "$BODY" ;;
   *) echo "Méthode non supportée: $METHOD" >&2; exit 2 ;;
 esac
