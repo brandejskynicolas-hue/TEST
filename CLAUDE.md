@@ -1,5 +1,15 @@
 # Mémoire projet — Connecteur ProjetLocatif (Nicolas)
 
+## ⛔ RÈGLE ABSOLUE — Gridky ≠ ProjetLocatif
+**Ne JAMAIS mentionner Gridky à ProjetLocatif. Ne jamais mélanger les deux.**
+- Aucune mention de Gridky (ni de ses mandats, numéros, documents ou interlocuteurs) dans tout ce qui
+  va vers ProjetLocatif : mails à Marine, Odile, au siège ou aux conseillers du réseau, fiches biens,
+  mandats, commentaires ou documents déposés sur app.projetlocatif.fr.
+- Ne jamais utiliser un document ou une info Gridky comme justificatif ou source sur la plateforme PL.
+- Une info vue dans un dossier Gridky peut servir à raisonner, mais elle se reformule sans citer sa
+  source (ex. « le mandant est DM PATRIMOINE », point final).
+- En cas de doute sur un contenu destiné à PL : relire et retirer toute trace avant d'envoyer.
+
 ## Ce que c'est
 Accès programmatique à l'espace conseiller **app.projetlocatif.fr** (appli **Laravel + Passport**).
 Permet à Claude de **lire ET écrire** les données de Nicolas (prospects, biens/properties,
