@@ -22,6 +22,9 @@ JAR="$DATA_DIR/jar.txt"
 [ -s "$COOKIE_FILE" ] || { echo "Cookie absent : écris 'projetlocatif_session=...' dans $COOKIE_FILE" >&2; exit 1; }
 SESSION="$(cat "$COOKIE_FILE")"
 METHOD="${1:?methode GET|POST|PUT|DELETE}"; APIP="${2:?chemin /api/...}"; BODY="${3:-}"
+# Corps par défaut = objet vide. NB : ne pas écrire "${BODY:-{}}" — bash y ajoute une "}" en trop
+# au JSON fourni (JSON invalide → Laravel ignore tout le corps : filtres et champs perdus).
+[ -n "$BODY" ] || BODY='{}'
 
 # (ré)amorce laravel_token + XSRF-TOKEN si le jar est vide ou vieux de +10 min
 if [ ! -s "$JAR" ] || [ -n "$(find "$JAR" -mmin +10 2>/dev/null || true)" ]; then
@@ -39,6 +42,9 @@ COMMON=(-sS -m 30
 case "$METHOD" in
   GET)            curl "${COMMON[@]}" "$BASE$APIP" ;;
   DELETE)         curl "${COMMON[@]}" -X DELETE "$BASE$APIP" ;;
-  POST|PUT|PATCH) curl "${COMMON[@]}" -X "$METHOD" "$BASE$APIP" -H "Content-Type: application/json" --data "${BODY:-{}}" ;;
+  POST|PUT|PATCH) curl "${COMMON[@]}" -X "$METHOD" "$BASE$APIP" -H "Content-Type: application/json" --data "$BODY" ;;
+  # Multipart (comme le front Vue) : pl-live.sh FORM /api/sales -F 'sale=<sale.json' -F 'documents=[]'
+  # Requis pour créer/modifier une vente (sales.store / sales.update attendent sale=JSON en form-data).
+  FORM)           shift 2; curl "${COMMON[@]}" -X POST "$BASE$APIP" "$@" ;;
   *) echo "Méthode non supportée: $METHOD" >&2; exit 2 ;;
 esac

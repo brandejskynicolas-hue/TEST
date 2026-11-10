@@ -39,7 +39,23 @@ cookie `XSRF-TOKEN`. Sans ça → `Unauthenticated`.
   - `statut` : "Avant-contrat" (= compromis) → "En attente de signature" → "Vente" (acte signé)
   - `date_signature` = date du compromis (YYYY-MM-DD) ; `date_acte` (format objet {date,timezone}) ;
     `honoraires` = {prix_vente, honoraire_pl_ttc, honoraire_pl, charge, distribution, ...}
+  - **Créer/modifier une vente = multipart, pas JSON** (comme le front Vue) :
+    `pl-live.sh FORM /api/sales -F 'sale=<sale.json' -F 'documents=<docs.json' -F 'files[0]=@compromis.pdf;type=application/pdf'`
+    - `sale` = objet complet (partir de `GET /api/sales/init`) ; `documents` = `[{"created_at":<ms>,"name":"…","type":"sale","file":{}}]`
+    - **Un document est obligatoire** (sinon « Veuillez ajouter un document. ») ; en JSON pur → 500.
+    - Modèle qui marche : `property_id`, `mandat_vente_id`, `rdv{date_signature,date_vente_prevue}`, `date_signature`,
+      `date_acte` ("YYYY-MM-DD"), `honoraires{distribution:"perso",charge,prix_vente,honoraire_pl_ttc,honoraire_pl(=TTC/1,2),numero_mandat_vente,…}`,
+      `sellers_id[]`, `notaires_id[]`, `prospects_id[]` (id **prospect**, pas user), `advisors[{advisor_id,honoraires{pourcentage,honoraire,commission(=70 %)}}]`
+    - IDs conseillers : Nicolas `advisor_id 544` · Florian BICHET `advisor_id 492`. Notaire SEYLER Valentin = 5207.
+    - Vendeur Fief : vérifier le `seller_id` **du mandat** (EMJ1 existe en double : #3172 et #3337).
+- Prospects : `GET /api/prospects/{id}` → `{id}` = **id user** (ex. #11030), le prospect est dans `.prospect.id`.
+  - Recherche : `POST /api/prospects/search {"page":N,"status":["hors_parcours"]}` (sans `status` → seulement « en accompagnement »).
+  - Créer : `POST /api/prospects` (JSON) avec `nom,prenom,adresse,code_postal,ville,tel,email,password,password_confirmation`
+    + `prospect{type,civilite,situation,visibility:"perso",advisors_id:[544],…}` (mot de passe aléatoire, non conservé).
+    Le statut part toujours en « Validation siège en cours ».
+- Mandats : `GET /api/mandats/{id}` (le `search` ne renvoie pas tous les mandats signés).
 - Carte complète des 348 routes : `projetlocatif-mcp/docs/api-routes-projetlocatif.txt`
+- ⚠️ Bug corrigé dans `pl-live.sh` (nov. 2026) : `"${BODY:-{}}"` ajoutait une `}` → JSON invalide → filtres/champs ignorés.
 
 ## Règles de prudence (plateforme RÉSEAU partagée : Fief, Florian, siège)
 - Mode convenu avec Nicolas : **écriture autonome sur les ventes** ; pour le reste, lecture.
