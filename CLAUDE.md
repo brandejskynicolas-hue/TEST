@@ -56,6 +56,14 @@ cookie `XSRF-TOKEN`. Sans ça → `Unauthenticated`.
 - Mandats : `GET /api/mandats/{id}` (le `search` ne renvoie pas tous les mandats signés).
 - Carte complète des 348 routes : `projetlocatif-mcp/docs/api-routes-projetlocatif.txt`
 - ⚠️ Bug corrigé dans `pl-live.sh` (nov. 2026) : `"${BODY:-{}}"` ajoutait une `}` → JSON invalide → filtres/champs ignorés.
+- ⚠️ **Pare-feu CrowdSec** : balayer des IDs en parallèle (xargs -P 8, centaines de GET) déclenche un
+  ban temporaire (page HTML « CrowdSec Ban », ou réponse vide). → requêtes **séquentielles**, ciblées,
+  jamais de scan en rafale. Retrouver un mandat via `GET /api/mandats/{id}` au cas par cas.
+- Envoi multipart (création de vente) : si la réponse est vide (timeout 30 s / ban), **vérifier via
+  `POST /api/sales/search` que la vente n'existe pas avant de renvoyer** (éviter les doublons).
+- Programme Schirmeck (SAS EMJ1, vendeur #3172) : mandats #691→#695 (lots 5,6,7,12), #719 (lot 8).
+  Programme Libération : lot 1 = mandat #808 (vendeur #3337). Les fiches biens peuvent garder
+  l'ancien prix (avant avenant) : se fier au **mandat**.
 
 ## Règles de prudence (plateforme RÉSEAU partagée : Fief, Florian, siège)
 - Mode convenu avec Nicolas : **écriture autonome sur les ventes** ; pour le reste, lecture.
