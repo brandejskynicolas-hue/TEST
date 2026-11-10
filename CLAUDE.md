@@ -1,4 +1,10 @@
-# Mémoire projet — Connecteur ProjetLocatif (Nicolas)
+# Mémoire projet — Nicolas
+
+> **E-commerce Forge (Ma Tresse de Lit, Rideaux Déco) / Google Ads** : voir
+> `forge-ecommerce/README.md` (accès Composio, IDs de comptes, tableau de bord KPI live,
+> règles : aucune dépense ni modification de campagne sans validation explicite).
+
+# Connecteur ProjetLocatif
 
 ## Ce que c'est
 Accès programmatique à l'espace conseiller **app.projetlocatif.fr** (appli **Laravel + Passport**).
