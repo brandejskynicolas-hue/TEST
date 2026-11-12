@@ -5,6 +5,27 @@ Accès programmatique à l'espace conseiller **app.projetlocatif.fr** (appli **L
 Permet à Claude de **lire ET écrire** les données de Nicolas (prospects, biens/properties,
 ventes/compromis, mandats) comme s'il le faisait dans l'interface.
 
+## ⚠️ Règles du siège (Marine SCOUBART / Odile GUYON) — à lire avant toute écriture
+Le siège contrôle chaque saisie. Leurs consignes priment sur tout le reste de ce fichier.
+Process complet : **skill `saisie-compromis-pl`** (`.claude/skills/saisie-compromis-pl/SKILL.md`).
+Journal des retours : `projetlocatif-mcp/docs/retours-siege.md`.
+
+1. **Compromis SIGNÉ uniquement.** Projet de compromis = on ne saisit rien (ni vente, ni acquéreur)
+   et on attend la signature. Vérifier signatures, date, paraphes, absence de « PROJET ».
+   (Erreur commise 2× : 10/09 et 12/11/2026.)
+2. **Acquéreur inconnu sur un mandat de vente = créé via la vente (bonhomme +), statut
+   « hors parcours ».** Jamais par l'onglet Acquéreurs (= faux client « en attente
+   d'accompagnement », anomalies « pas de mandat rattaché »). API : `POST /api/prospects?horsParcours=true`.
+   `scripts/pl-live.sh` bloque la création classique.
+3. **Toujours rattacher le mandat de vente** à la vente (`mandat_vente_id`).
+4. **Répartition des honoraires Nicolas / Florian confirmée par dossier** — jamais 100 % Nicolas
+   par défaut. Vérifier que le compromis détaille la part Fief / ProjetLocatif et qui est facturé.
+5. **Conventions de partage d'honoraires (DocuSign) : signées par Nicolas lui-même**, jamais par
+   Claude ni par Daniéla (obligation légale).
+6. **À chaque tâche plateforme : relire les mails récents de Marine/Odile** (Gmail
+   `from:(marine.scoubart@projetlocatif.fr OR odile.guyon@projetlocatif.fr) newer_than:30d`) et
+   intégrer toute nouvelle consigne : journal + skill + ce résumé, dans le même commit.
+
 Deux usages, voir `projetlocatif-mcp/LIVE-USAGE.md` :
 - **Live en chat (session cloud)** : via le script `projetlocatif-mcp/scripts/pl-live.sh` + un cookie de session.
 - **Claude Desktop (quotidien)** : le serveur MCP `projetlocatif-mcp/src/index.js` (voir README).
@@ -34,15 +55,25 @@ cookie `XSRF-TOKEN`. Sans ça → `Unauthenticated`.
   - créer brouillon privé : `POST /api/properties/draft` (mettre `visibility:"me"`, `draft:true`)
   - supprimer : `DELETE /api/properties/{id}` (soft-delete = archivé). Purge définitive
     `PUT /api/properties/{id}/delete` = **403 pour le rôle conseiller** (siège only).
+  - acquéreur **hors parcours** (créé depuis une vente) : `GET /api/public/prospects/init?horsParcours=true`
+    puis `POST /api/prospects?horsParcours=true` (user + password/password_confirmation aléatoires) ;
+    réponse `duplicate` = existe déjà, ne pas forcer. Lier `prospect.id` dans `sale.prospects_id`.
 - Ventes/compromis : `POST /api/sales/search {"page":N}` · détail `GET /api/sales/{id}` ·
-  update `POST /api/sales/{id}` · créer `POST /api/sales`
+  update `POST /api/sales/{id}` · créer `POST /api/sales` · init `GET /api/sales/init`
+  - enregistrement = **multipart** comme le formulaire : `sale`=JSON, `documents`=JSON
+    `[{name,type:"sale",created_at}]`, `files[i]`=PDF → `scripts/pl-live.sh FORM <chemin> -F …`
+  - liens : `property_id`, `mandat_vente_id`, `mandat_recherche_id`, `sellers_id`, `prospects_id`,
+    `notaires_id`, `agences_id`, `advisors[]` (répartition honoraires), `rdv.date_signature`
+  - recherche d'options : `GET /api/sales/options?value=mandats_vente|mandats_recherche|advisors&text=…`
   - `statut` : "Avant-contrat" (= compromis) → "En attente de signature" → "Vente" (acte signé)
   - `date_signature` = date du compromis (YYYY-MM-DD) ; `date_acte` (format objet {date,timezone}) ;
     `honoraires` = {prix_vente, honoraire_pl_ttc, honoraire_pl, charge, distribution, ...}
 - Carte complète des 348 routes : `projetlocatif-mcp/docs/api-routes-projetlocatif.txt`
 
 ## Règles de prudence (plateforme RÉSEAU partagée : Fief, Florian, siège)
-- Mode convenu avec Nicolas : **écriture autonome sur les ventes** ; pour le reste, lecture.
+- Mode convenu avec Nicolas : **écriture autonome sur les ventes** (en suivant le skill
+  `saisie-compromis-pl`) ; seule création d'acquéreur autorisée = hors parcours depuis une vente ;
+  pour le reste, lecture.
 - Toute création de bien de test → en **brouillon `visibility:"me"`** puis supprimé.
 - Pour une 1ʳᵉ écriture d'un type nouveau : lire → modifier → envoyer → **relire pour vérifier**.
 - Ne jamais committer le cookie ni aucune donnée client.

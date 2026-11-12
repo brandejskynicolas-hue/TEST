@@ -30,5 +30,10 @@ la fenêtre) → ajouter le serveur dans la config Claude Desktop. Ensuite ton C
 la plateforme quand tu veux.
 
 ## Pour moi (Claude), techniquement
-Script persistant : `scripts/pl-live.sh GET|POST|PUT|DELETE <chemin> [json]`.
+Script persistant : `scripts/pl-live.sh GET|POST|PUT|DELETE <chemin> [json]`, et
+`scripts/pl-live.sh FORM <chemin> -F …` pour un enregistrement multipart (vente + PDF).
 Cookie attendu dans `~/.projetlocatif-mcp/cookie.txt`. Détails et endpoints : voir `../CLAUDE.md`.
+
+Saisie d'un compromis : suivre **obligatoirement** le skill `saisie-compromis-pl`
+(`../.claude/skills/saisie-compromis-pl/SKILL.md`) — compromis signé uniquement, acquéreur inconnu
+créé « hors parcours » depuis la vente. Retours du siège : `docs/retours-siege.md`.
