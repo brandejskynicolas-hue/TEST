@@ -38,6 +38,20 @@ Doute → ne pas déposer ; demander à Nicolas « le compromis signé (exemplai
 réclamer au notaire. Erreur déjà commise **deux fois** : SCI RIUS / DESTOUCHES (10/09/2026) et
 EMJ1 / MAYER + EMJ1 / SCI DAN DUBACH (12/11/2026).
 
+**Si c'est un PROJET (avant signature)** : rien sur la plateforme, mais une relecture utile.
+Le siège relit volontiers les projets par mail : Odile a repéré le 28/07 un mauvais n° de mandat
+avant signature. Contrôler sur le projet :
+- le **n° de mandat** cité au paragraphe « négociation » = le mandat de vente du lot. Il a déjà été
+  faux deux fois : n° 6032 au lieu de 6029, et n° 5961 d'un autre bien. Le notaire copie-colle d'une
+  autre vente ;
+- le mandat est **en vigueur à la date de signature**. Les anciens mandats n'ont pas de droit de
+  suite : un mandat expiré se renouvelle **avant** de signer. C'est arrivé 4 fois ;
+- la **charge des honoraires** est celle du mandat. Elle ne change plus une fois l'acquéreur
+  identifié (Marine, 27/10) ;
+- les honoraires respectent le barème (étape 2).
+Proposer à Nicolas un brouillon de mail à Marine + Odile (Florian en copie) avec le projet. Le
+brouillon n'est jamais envoyé sans son feu vert.
+
 ## Étape 2 — Lire le compromis et préparer la fiche
 
 Relever, avec la page source : vendeur(s) (personne morale + représentant), acquéreur(s) (identité,
@@ -48,6 +62,13 @@ réitération, conditions suspensives (prêt : montant, durée, date limite).
 Honoraires : si le compromis ne détaille pas la part de chaque agence (Fief vs ProjetLocatif) ni
 qui est facturé (vendeur ou Fief) → le signaler à Nicolas avant saisie. Marine en a besoin pour
 facturer au bon débiteur (cas EMUNAH TRANSACTION / Partouche, 30/10/2026).
+
+Barème à contrôler, sinon signaler :
+- **≤ 8 % TTC**. On arrondit le net vendeur à la hausse, jamais à la baisse : au-delà de 8 %,
+  c'est interdit (Marine, 09/11) ;
+- **minimum 5 900 €**. Exception : la dérogation de Robin, qui couvre Merckel et les petits biens
+  comme les garages. Pour un appartement, il faut l'accord de Robin sur ce bien précis ;
+- la **charge** (vendeur ou acquéreur) doit être identique au mandat.
 
 ## Étape 3 — L'acquéreur : règle « hors parcours » (le point de Marine)
 
@@ -85,8 +106,8 @@ Partir de `GET /api/sales/init` (création) ou `GET /api/sales/{id}` (mise à jo
 
 | Champ | Règle |
 |---|---|
-| `property_id` | le bien / lot exact du compromis |
-| `mandat_vente_id` + `honoraires.numero_mandat_vente` | **toujours** rattacher le mandat de vente (recherche : `GET /api/sales/options?value=mandats_vente&text=…`). Mandat introuvable → STOP, demander à Nicolas |
+| `property_id` | le bien / lot exact du compromis. **Un bien = un mandat = une vente** : un bien déjà rattaché à une autre vente → STOP, le siège duplique le bien |
+| `mandat_vente_id` + `honoraires.numero_mandat_vente` | **toujours** rattacher le mandat de vente (recherche : `GET /api/sales/options?value=mandats_vente&text=…`). Même n° que celui cité dans le compromis, et mandat en vigueur à la date de signature. Mandat introuvable, expiré ou n° différent → STOP, demander à Nicolas |
 | `mandat_recherche_id` | uniquement si acquéreur accompagné ; vide pour un hors parcours |
 | `sellers_id` | le mandant (ex. SAS EMJ1, SCI RIUS… côté Fief) |
 | `prospects_id` | id(s) **prospect** de l'étape 3 |
@@ -121,6 +142,24 @@ Relire `GET /api/sales/{id}` puis chaque `GET /api/prospects/{id}` et cocher :
 Puis récap à Nicolas : vente créée (id), acquéreur(s) et statut, mandat, répartition, point(s) en
 suspens (ex. répartition Fief/PL absente du compromis).
 
+Saisir **dans les jours qui suivent la signature**. Un mandat a déjà expiré entre la signature et
+l'enregistrement (Heidenberg lot 7, 24/08).
+
+## Étape 6 — De l'avant-contrat à l'acte
+
+- **Florian co-conseiller → convention de partage d'honoraires obligatoire.** Elle arrive par
+  DocuSign et c'est Nicolas qui la signe. Le rappeler à Nicolas.
+- **Date de signature de l'acte** : la notifier sur la vente **seulement après** la convocation du
+  notaire. Une date périmée doit être corrigée : le siège suit les règlements dessus (08/09).
+- **Factures d'honoraires** : la demande se fait sur la plateforme, onglet Ventes. Le siège les émet
+  une semaine avant le rendez-vous. Si le notaire les veut plus tôt, le dire par mail. Le conseiller
+  les transmet ensuite au notaire.
+- **Facture du conseiller au siège** : le libellé reprend le nom complet de la vente (ex.
+  « FIEF / DELLE DONNE »). Elle précise l'entité à payer et facture le montant de la répartition
+  saisie, rien d'autre. Le siège ne reverse qu'après avoir reçu les fonds du notaire.
+- **Après l'acte** : saisir la date réelle dans le 3ᵉ onglet de la vente (statut « Vente ») et
+  envoyer l'acte ou l'attestation de vente.
+
 ## Ce que Claude ne fait jamais
 
 - Déposer un projet de compromis, ou créer la vente avant la signature.
@@ -129,6 +168,9 @@ suspens (ex. répartition Fief/PL absente du compromis).
   personnellement (Marine, 01/10/2026 : impossible légalement de déléguer).
 - Supprimer / archiver une vente ou un acquéreur pour « réparer » sans accord de Nicolas : on
   signale l'anomalie et on propose la correction.
+- Retoucher un PDF de mandat ou d'avenant. Seul le siège les rédige, dans Protexa (loi Hoguet,
+  registre des mandats).
+- Changer la charge des honoraires une fois l'acquéreur identifié, ou dépasser 8 % TTC.
 
 ## Corriger une anomalie déjà créée
 

@@ -22,7 +22,19 @@ Journal des retours : `projetlocatif-mcp/docs/retours-siege.md`.
    par défaut. Vérifier que le compromis détaille la part Fief / ProjetLocatif et qui est facturé.
 5. **Conventions de partage d'honoraires (DocuSign) : signées par Nicolas lui-même**, jamais par
    Claude ni par Daniéla (obligation légale).
-6. **À chaque tâche plateforme : relire les mails récents de Marine/Odile** (Gmail
+6. **Barème** : honoraires ≤ 8 % TTC (net vendeur arrondi à la hausse), minimum 5 900 € sauf
+   dérogation de Robin. **Charge des honoraires figée** une fois l'acquéreur identifié.
+7. **Mandat valide et bon numéro** : un bien = un mandat = une vente. Le mandat doit être en
+   vigueur le jour du compromis, car les anciens n'ont pas de droit de suite. Le n° cité dans le
+   compromis doit être le bon.
+8. **Mandats et avenants : seul le siège les rédige**, dans Protexa. Ne jamais retoucher un PDF.
+   Une demande d'avenant indique le n° de mandat, le lot, le net vendeur, les honoraires, la
+   charge et la surface. Une baisse de prix diffusée dans une annonce exige un avenant signé ;
+   une baisse négociée dans le compromis n'en exige pas.
+9. **Annonces** : pas d'annonce sans mandat valide et signé. L'annonce doit être strictement
+   conforme au mandat ou à l'avenant, et n'est mise à jour qu'après l'avenant signé. Les demandes
+   passent par le formulaire « Annonce LeBonCoin », avec le n° de mandat.
+10. **À chaque tâche plateforme : relire les mails récents de Marine/Odile** (Gmail
    `from:(marine.scoubart@projetlocatif.fr OR odile.guyon@projetlocatif.fr) newer_than:30d`) et
    intégrer toute nouvelle consigne : journal + skill + ce résumé, dans le même commit.
 
