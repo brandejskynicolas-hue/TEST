@@ -39,6 +39,6 @@ COMMON=(-sS -m 30
 case "$METHOD" in
   GET)            curl "${COMMON[@]}" "$BASE$APIP" ;;
   DELETE)         curl "${COMMON[@]}" -X DELETE "$BASE$APIP" ;;
-  POST|PUT|PATCH) curl "${COMMON[@]}" -X "$METHOD" "$BASE$APIP" -H "Content-Type: application/json" --data "${BODY:-{}}" ;;
+  POST|PUT|PATCH) curl "${COMMON[@]}" -X "$METHOD" "$BASE$APIP" -H "Content-Type: application/json" --data "${BODY:-"{}"}" ;;
   *) echo "Méthode non supportée: $METHOD" >&2; exit 2 ;;
 esac
